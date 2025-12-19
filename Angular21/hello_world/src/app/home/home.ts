@@ -1,8 +1,7 @@
-import { Component, inject } from '@angular/core';
-import { HousingLocation } from '../housing-location/housing-location';
-import { HousingService } from '../housing.service';
-import { HousingLocationInfo } from '../housing-location';
-
+import {ChangeDetectorRef, Component, inject} from '@angular/core';
+import {HousingLocation} from '../housing-location/housing-location';
+import { HousingLocationInfo } from '../housing-location'; 
+import {HousingService} from '../housing.service';
 @Component({
   selector: 'app-home',
   imports: [HousingLocation],
@@ -14,7 +13,7 @@ import { HousingLocationInfo } from '../housing-location';
       </form>
     </section>
     <section class="results">
-        @for (housingLocation of filteredLocationList; track $index) {
+      @for (housingLocation of filteredLocationList; track $index) {
         <app-housing-location [housingLocation]="housingLocation" />
       }
     </section>
@@ -22,16 +21,19 @@ import { HousingLocationInfo } from '../housing-location';
   styleUrls: ['./home.css'],
 })
 export class Home {
-
+  private readonly changeDetectorRef = inject(ChangeDetectorRef);
   housingLocationList: HousingLocationInfo[] = [];
   housingService: HousingService = inject(HousingService);
   filteredLocationList: HousingLocationInfo[] = [];
-
   constructor() {
-    this.housingLocationList = this.housingService.getAllHousingLocations();
-    this.filteredLocationList = this.housingLocationList;
+    this.housingService
+      .getAllHousingLocations()
+      .then((housingLocationList: HousingLocationInfo[]) => {
+        this.housingLocationList = housingLocationList;
+        this.filteredLocationList = housingLocationList;
+        this.changeDetectorRef.markForCheck();
+      });
   }
-
   filterResults(text: string) {
     if (!text) {
       this.filteredLocationList = this.housingLocationList;
@@ -41,5 +43,4 @@ export class Home {
       housingLocation?.city.toLowerCase().includes(text.toLowerCase()),
     );
   }
-
 }
